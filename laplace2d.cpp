@@ -59,8 +59,9 @@ int main(int argc, const char** argv)
   while ( error > tol && iter < iter_max )
   {
     error = 0.0;
-#pragma omp parallel for reduction(max:error)
-    for( int j = 1; j < jmax+1; j++ )
+ #pragma omp target teams distribute parallel for reduction(max:error) \
+ map(A[0:(imax+2)*(jmax+2)]) map(Anew[0:(imax+2)*(jmax+2)])
+     for( int j = 1; j < jmax+1; j++ )
     {
       for( int i = 1; i < imax+1; i++)
       {
@@ -69,7 +70,10 @@ int main(int argc, const char** argv)
         error = fmax( error, fabs(Anew[(j)*(imax+2)+i]-A[(j)*(imax+2)+i]));
       }
     }
-#pragma omp parallel for
+    
+ #pragma omp target teams distribute parallel for \
+ map(A[0:(imax+2)*(jmax+2)]) map(Anew[0:(imax+2)*(jmax+2)])
+ 
     for( int j = 1; j < jmax+1; j++ )
     {
       for( int i = 1; i < imax+1; i++)
